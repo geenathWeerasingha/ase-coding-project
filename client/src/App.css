@@ -14,3 +14,9 @@ body {
   min-height: 100vh; /* Set a minimum height of the viewport height */
   margin: 0;
 }
+
+#root {
+  flex: 1; /* Allow the main content to grow and take up all available space */
+  display: flex;
+  flex-direction: column;
+}
