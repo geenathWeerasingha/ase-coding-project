@@ -90,8 +90,8 @@ Haulmatic is a full-stack web application designed to manage users. It consists 
        id INT(11) NOT NULL AUTO_INCREMENT,
        username VARCHAR(50) NOT NULL,
        password VARCHAR(255) NOT NULL,
-       firstname VARCHAR(50) NOT NULL,
-       lastname VARCHAR(50) NOT NULL,
+       firstname VARCHAR(50) NULL,
+       lastname VARCHAR(50)  NULL,
        refreshToken TEXT DEFAULT NULL,
        roles LONGTEXT DEFAULT '{\"User\": 2001}',
        PRIMARY KEY (id)
