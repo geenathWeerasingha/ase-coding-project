@@ -24,6 +24,14 @@ const createNewUser = async (req, res) => {
   }
 
   try {
+    const user = req?.body?.userName;
+
+    const [rows] = await db.query(
+      "SELECT username FROM users WHERE username = ?",
+      [user]
+    );
+    if (rows.length > 0) return res.sendStatus(409); // Conflict
+
     const pwd = req?.body?.password;
     const hashedPwd = await bcrypt.hash(pwd, 10);
     const [result] = await db.query(
@@ -47,15 +55,9 @@ const updateUser = async (req, res) => {
   }
 
   try {
-     
     const [result] = await db.query(
       "UPDATE users SET userName = ?, firstName = ?, lastName=? WHERE id = ?",
-      [
-        req.body.userName,
-        req.body.firstName,
-        req.body.lastName,
-        req.body.id,
-      ]
+      [req.body.userName, req.body.firstName, req.body.lastName, req.body.id]
     );
     if (result.affectedRows === 0) {
       return res
@@ -69,7 +71,6 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-   
   if (!req?.params?.id)
     return res.status(400).json({ message: "user ID required." });
 

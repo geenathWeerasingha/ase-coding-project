@@ -10,6 +10,8 @@ const User = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [updatesuccessMessage, setUpdateSuccessMessage] = useState("");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -37,9 +39,9 @@ const User = () => {
         });
 
         // Assuming the data structure is directly usable
-        console.log(response.data);
+        console.log(response?.data);
         if (isMounted) {
-          setUsers(response.data);
+          setUsers(response?.data);
         }
       } catch (err) {
         if (err.name !== "CanceledError") {
@@ -175,11 +177,18 @@ const User = () => {
       console.log(JSON.stringify(response?.data));
 
       alert(JSON.stringify(response?.data));
+
+      setSuccessMessage("User created successfully");
+
       refreshList();
       resetForm();
     } catch (error) {
-      console.error(error);
-      alert("Failed");
+      if (error.response?.status === 409) {
+        alert("Username already taken");
+      } else {
+        console.error(error);
+        alert(error);
+      }
     } finally {
       controller.abort();
     }
@@ -200,12 +209,13 @@ const User = () => {
       const response = await axiosPrivate.put("/api/User", {
         userName: userName,
         firstName: firstName,
-        lastName:lastName,
+        lastName: lastName,
         id: userId,
         signal: controller.signal,
       });
 
       alert("Successfully updated"); // Assuming the API response includes the data you want to alert
+      setUpdateSuccessMessage("User updated successfully");
       refreshList();
       resetForm();
     } catch (error) {
@@ -252,6 +262,7 @@ const User = () => {
         type="button"
         className="bg-blue-500 hover:bg-blue-700 text-white  py-2 px-4 rounded m-2 mt-5 mr-5 float-right"
         onClick={addClick}
+        data-testid="add-user-button"
       >
         Add User
       </button>
@@ -268,52 +279,60 @@ const User = () => {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {users.map((emp) => (
-            <tr key={emp.userId}>
-              <td className="text-center pt-2 pb-2">{emp.username}</td>
-              <td className="text-center pt-2 pb-2">{emp.firstname}</td>
-              <td className="text-center pt-2 pb-2">{emp.lastname}</td>
-              <td className="text-center pt-2 pb-2">
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
-                  onClick={() => editClick(emp)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    className="bi bi-pencil-square"
-                    viewBox="0 0 16 16"
+          {users && users.length > 0 ? (
+            users.map((emp) => (
+              <tr key={emp.userId}>
+                <td className="text-center pt-2 pb-2">{emp.username}</td>
+                <td className="text-center pt-2 pb-2">{emp.firstname}</td>
+                <td className="text-center pt-2 pb-2">{emp.lastname}</td>
+                <td className="text-center pt-2 pb-2">
+                  <button
+                    type="button"
+                    aria-label="Edit"
+                    className="p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                    onClick={() => editClick(emp)}
                   >
-                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-pencil-square"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                      <path
+                        fillRule="evenodd"
+                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
+                      />
+                    </svg>
+                    
+                  </button>
 
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:text-gray-800 focus:outline-none ml-2"
-                  onClick={() => deleteClick(emp.id)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    className="bi bi-trash-fill"
-                    viewBox="0 0 16 16"
+                  <button
+                    type="button"
+                    className="p-2 text-gray-600 hover:text-gray-800 focus:outline-none ml-2"
+                    onClick={() => deleteClick(emp.id)}
                   >
-                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
-                  </svg>
-                </button>
-              </td>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-trash-fill"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="2">No users available</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -362,11 +381,19 @@ const User = () => {
               <div className="flex flex-row mb-0">
                 <div className="p-2 w-[550px] bd-highlight">
                   <div className="mb-2 flex">
-                    <span className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50">
+                    {/* <span className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50">
                       User Name
-                    </span>
+                    </span> */}
+
+                    <label
+                      htmlFor="userName"
+                      className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50"
+                    >
+                      User Name
+                    </label>
 
                     <input
+                      id="userName"
                       type="text"
                       className={`form-control flex-1 min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid ${
                         userNameError ? "border-red-500" : "border-gray-300"
@@ -383,11 +410,15 @@ const User = () => {
                   )}
 
                   <div className="mb-2 flex">
-                    <span className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50">
+                    <label
+                      htmlFor="firstName"
+                      className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50"
+                    >
                       First Name
-                    </span>
+                    </label>
 
                     <input
+                      id="firstName"
                       type="text"
                       className={`form-control flex-1 min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid ${
                         firstNameError ? "border-red-500" : "border-gray-300"
@@ -404,11 +435,15 @@ const User = () => {
                   )}
 
                   <div className="mb-2 flex">
-                    <span className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50">
+                    <label
+                      htmlFor="lastName"
+                      className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50"
+                    >
                       Last Name
-                    </span>
+                    </label>
 
                     <input
+                      id="lastName"
                       type="text"
                       className={`form-control flex-1 min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid ${
                         lastNameError ? "border-red-500" : "border-gray-300"
@@ -427,10 +462,14 @@ const User = () => {
                   {userId === 0 && (
                     <div>
                       <div className="mb-2 flex">
-                        <span className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50">
+                        <label
+                          htmlFor="Password"
+                          className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50"
+                        >
                           Password
-                        </span>
+                        </label>
                         <input
+                          id="Password"
                           type="password"
                           className={`form-control flex-1 min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid ${
                             passwordError ? "border-red-500" : "border-gray-300"
@@ -445,10 +484,14 @@ const User = () => {
                         </div>
                       )}
                       <div className="mb-2 flex">
-                        <span className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50">
+                        <label
+                          htmlFor="confirmPassword"
+                          className="input-group-text inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-500 text-sm rounded-l-md bg-gray-50"
+                        >
                           Confirm Password
-                        </span>
+                        </label>
                         <input
+                          id="confirmPassword"
                           type="password"
                           className={`form-control flex-1 min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid ${
                             confirmPasswordError
@@ -462,6 +505,18 @@ const User = () => {
                       {confirmPasswordError && (
                         <div className="text-red-500 text-xs text-start mb-2">
                           {confirmPasswordError}
+                        </div>
+                      )}
+
+                      {successMessage && (
+                        <div className="text-green-500 text-xs text-start mb-2">
+                          {successMessage}
+                        </div>
+                      )}
+
+                      {updatesuccessMessage && (
+                        <div className="text-green-500 text-xs text-start mb-2">
+                          {updatesuccessMessage}
                         </div>
                       )}
                     </div>
